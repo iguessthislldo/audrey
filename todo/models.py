@@ -2,7 +2,7 @@ from django.db import models
 
 from tag.models import *
 
-class Task(TaggedObject):
+class Task(Tagged_Object):
     name = models.CharField(
         max_length = 256,
         default = 'Task'

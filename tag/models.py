@@ -1,15 +1,24 @@
 from django.db import models
 
-class Tag(models.Model):
+class Abstract_Tag(models.Model):
     name = models.CharField(
         primary_key = True,
         max_length = 256,
     )
 
+    class Meta:
+        abstract = True
+
     def __str__(self):
         return self.name
 
-class TaggedObject(models.Model):
+class Tag(Abstract_Tag):
+    pass
+
+class Meta_Tag(Abstract_Tag):
+    pass
+
+class Tagged_Object(models.Model):
     def tag(self, *tags):
         tag_instance = None
         for tag in tags:
@@ -54,7 +63,7 @@ class Tagging(models.Model):
     )
 
     object = models.ForeignKey(
-        TaggedObject,
+        Tagged_Object,
         on_delete = models.CASCADE,
     )
 
@@ -63,3 +72,28 @@ class Tagging(models.Model):
             str(self.object),
             self.tag.name,
         )
+
+class Meta_Tagging(models.Model):
+    meta_tag = models.ForeignKey(
+        Meta_Tag,
+        on_delete = models.CASCADE,
+    )
+
+    object = models.ForeignKey(
+        Tagged_Object,
+        on_delete = models.CASCADE,
+    )
+
+    tag = models.ForeignKey(
+        Tag,
+        on_delete = models.CASCADE,
+    )
+
+    def __str__(self):
+        return '"{}" is metatagged "{}" with "{}"'.format(
+            repr(self.object),
+            self.meta_tag.name,
+            self.tag.name,
+        )
+        
+
