@@ -1,4 +1,10 @@
-from django.http import HttpResponse
+from django.http import JsonResponse
 
 def index(request):
-    return HttpResponse("Hello, world. You're at the todo index.")
+    value = None
+    if request.method == 'POST':
+        value = request.POST
+    else:
+        value = "NO POST"
+
+    return JsonResponse(value, safe=False)
