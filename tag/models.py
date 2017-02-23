@@ -61,7 +61,9 @@ class Tagged_Object(models.Model):
                     ).save()
         elif isinstance(arg, Tag):
             if arg._state.adding: # Not in DB
-                arg.save()
+                raise ValueError(
+                    'Tag must be saved before it can be used to tag an object'
+                )
             Tagging(tag = arg, object = self).save()
         else:
             raise ValueError(
@@ -77,6 +79,10 @@ class Tagged_Object(models.Model):
 
         Wrapper for Tagged_Object._tag(), and handles json.
         '''
+        if self._state.adding: # Not in DB
+            raise ValueError(
+                'Tagged_Object must be saved before it can be tagged'
+            )
         for arg in args:
             if isinstance(arg, str): # assume it's parsable as JSON
                 try:
