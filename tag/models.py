@@ -3,6 +3,8 @@ import uuid
 
 from django.db import models
 
+from tag.utils.saved import assume_saved
+
 TAG_NAME_MAX_LENGTH = 256
 
 class Abstract_Tag(models.Model):
@@ -75,10 +77,7 @@ class Tagged_Object(models.Model):
                             tag = tag_instance,
                         )
         elif isinstance(arg, Tag):
-            if arg._state.adding: # Not in DB
-                raise ValueError(
-                    'Tag must be saved before it can be used to tag an object'
-                )
+            assume_saved(arg)
             Tagging(tag = arg, object = self).save()
         else:
             raise ValueError(
