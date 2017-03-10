@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from todo.models import Task
+from task.models import Task
 from tag.models import Meta_Tag
 from tag.utils.boolean_tag import *
 

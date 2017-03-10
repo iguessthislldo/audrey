@@ -1,9 +1,9 @@
 from django.apps import AppConfig
 from django.db.models.signals import post_save
 
-class TodoConfig(AppConfig):
-    name = 'todo'
+class TaskConfig(AppConfig):
+    name = 'task'
     
     def ready(self):
-        import todo.signals
+        import task.signals
         
