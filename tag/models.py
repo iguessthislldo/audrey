@@ -1,4 +1,5 @@
 import json
+import uuid
 
 from django.db import models
 
@@ -16,7 +17,7 @@ class Abstract_Tag(models.Model):
         return self.name
 
 class Tag(Abstract_Tag):
-    '''Concrete Main Tag Class'''
+    '''Tag Class'''
     pass
 
 class Meta_Tag(Abstract_Tag):
@@ -28,37 +29,49 @@ class Meta_Tag(Abstract_Tag):
 class Tagged_Object(models.Model):
     '''Base class for Objects that are tagged'''
 
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
     def _tag(self, arg):
         if isinstance(arg, str):
             if not self.tagging_set.filter(tag__name = arg).exists():
-                Tagging(
+                self.tagging_set.create(
                     tag = Tag.objects.get_or_create(name = arg)[0],
-                    object = self
-                ).save()
+                )
         elif isinstance(arg, list):
             for i in arg:
                 self._tag(i)
         elif isinstance(arg, dict): # Meta_Tag
-            meta_tag_name = list(arg.keys())[0]
-            tag_names = list(arg.values())[0]
+            for k, v in arg.items():
+                meta_tag_name = k.name if isinstance(k, Meta_Tag) else k
+                tag_names = None
+                if isinstance(v, str):
+                    tag_names = [v]
+                elif isinstance(v, Tag):
+                    tag_names = v.name
+                else:
+                    raise TypeError()
 
-            # Get Meta Tag
-            meta_tag = Meta_Tag.objects.get_or_create(name = meta_tag_name)[0]
+                # Get Meta Tag
+                meta_tag = Meta_Tag.objects.get_or_create(name = meta_tag_name)[0]
 
-            # Apply Subtags
-            for tag_name in tag_names:
-                if not self.meta_tagging_set.filter(
-                    tag__name = tag_name,
-                    meta_tag__name = meta_tag_name
-                ).exists():
-                    tag_instance = Tag.objects.get_or_create(
-                        name = tag_name
-                    )[0]
-                    Meta_Tagging(
-                        meta_tag = meta_tag,
-                        tag = tag_instance,
-                        object = self,
-                    ).save()
+                # Apply Subtags
+                for _tag_name in tag_names:
+                    tag_name = _tag_name.name if isinstance(_tag_name, Tag) else _tag_name
+                    if not self.tagging_set.filter(
+                        tag__name = tag_name,
+                        meta_tag__name = meta_tag_name,
+                    ).exists():
+                        tag_instance = Tag.objects.get_or_create(
+                            name = tag_name
+                        )[0]
+                        self.tagging_set.create(
+                            meta_tag = meta_tag,
+                            tag = tag_instance,
+                        )
         elif isinstance(arg, Tag):
             if arg._state.adding: # Not in DB
                 raise ValueError(
@@ -74,10 +87,8 @@ class Tagged_Object(models.Model):
 
     def tag(self, *args):
         ''' Takes JSON of lists or actual lists of strings and meta tag dicts
-        and applies them to the Tagged_Object. Also takes Tag Objects but not
-        Meta_Tag objects.
-
-        Wrapper for Tagged_Object._tag(), and handles json.
+        and applies them to the Tagged_Object. Also takes Tag Objects and
+        lists returned by Tagged_Object.tags_objs().
         '''
         if self._state.adding: # Not in DB
             raise ValueError(
@@ -127,78 +138,62 @@ class Tagged_Object(models.Model):
                     self._untag(arg)
             else:
                 self._untag(arg)
-
-    def _tags(self):
-        '''Get Tag instances that this object is tagged with'''
-        return [i.tag for i in self.tagging_set.all()]
-
-    def _meta_tags(self):
-        '''Get Meta_Tag instances that this object is tagged as a dict with
-        a list of the sub Tags
-        '''
-        meta_tags = {}
-        for tagging in self.meta_tagging_set.all():
-            meta_tag = tagging.meta_tag
-            if meta_tag in meta_tags:
-                meta_tags[meta_tag].append(tagging.tag)
-            else:
-                meta_tags.update({
-                    meta_tag: [tagging.tag]
-                })
-
-        return meta_tags
             
-    def tags(self):
-        rv = [{i[0].name: [j.name for j in i[1]]} for i in self._meta_tags().items()]
-        for i in self._tags():
-            rv.append(i.name)
+    def tags_objs(self):
+        '''Return tags on this object as lists and dicts of Tag and Meta_Tag
+        instances.
+        '''
+        rv = []
+        meta = {}
+        for tagging in self.tagging_set.all():
+            if tagging.meta_tag is None:
+                rv.append(tagging.tag)
+            else:
+                if tagging.meta_tag in meta:
+                    meta[tagging.meta_tag].append(tagging.tag)
+                else:
+                    meta[tagging.meta_tag] = [tagging.tag]
+
+        for k, v in meta.items():
+            rv.append({k: v})
+
         return rv
 
+    def tags_str(self):
+        '''Return tags on this object as lists and dicts of strings.'''
+        l = []
+        for i in self.tags_objs():
+            if isinstance(i, Tag):
+                l.append(i.name)
+            else:
+                for k, v in i.items():
+                    l.append({k.name : [tag.name for tag in v]})
+        return l
+
+    def tags_json(self):
+        '''Return tags on this object as JSON of self.tags_str()'''
+        return json.dumps(self.tags_str())
+
     def __str__(self):
-        return json.dumps(self.tags())
+        return str(self.id)
 
 class Tagging(models.Model):
-    '''Relationship between a Tagged_Object and a Tag.'''
-    
+    tagged_object = models.ForeignKey(
+        Tagged_Object,
+        on_delete = models.CASCADE
+    )
+
     tag = models.ForeignKey(
         Tag,
         on_delete = models.CASCADE,
     )
-
-    object = models.ForeignKey(
-        Tagged_Object,
-        on_delete = models.CASCADE,
-    )
-
-    def __str__(self):
-        return '"{}" is tagged "{}"'.format(
-            str(self.object),
-            self.tag.name,
-        )
-
-class Meta_Tagging(models.Model):
-    '''Relationship between a Tagged_Object, Meta_Tag and Tag.'''
 
     meta_tag = models.ForeignKey(
         Meta_Tag,
         on_delete = models.CASCADE,
+        null = True,
     )
 
-    object = models.ForeignKey(
-        Tagged_Object,
-        on_delete = models.CASCADE,
-    )
-
-    tag = models.ForeignKey(
-        Tag,
-        on_delete = models.CASCADE,
-    )
-
-    def __str__(self):
-        return '"{}" is metatagged "{}" with "{}"'.format(
-            repr(self.object),
-            self.meta_tag.name,
-            self.tag.name,
-        )
-        
+    class Meta:
+         unique_together = (('tagged_object', 'tag', 'meta_tag'), )
 
