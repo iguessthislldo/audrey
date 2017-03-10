@@ -3,11 +3,13 @@ import uuid
 
 from django.db import models
 
+TAG_NAME_MAX_LENGTH = 256
+
 class Abstract_Tag(models.Model):
     '''Abstract Base class for Tags'''
     name = models.CharField(
         primary_key = True,
-        max_length = 256,
+        max_length = TAG_NAME_MAX_LENGTH,
     )
 
     class Meta:
