@@ -54,7 +54,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'dothing.urls'
+ROOT_URLCONF = 'audrey.urls'
 
 TEMPLATES = [
     {
@@ -72,7 +72,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'dothing.wsgi.application'
+WSGI_APPLICATION = 'audrey.wsgi.application'
 
 
 # Database
