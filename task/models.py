@@ -1,26 +1,40 @@
 from django.db import models
 
 from tag.models import *
-from tag.utils.boolean_tag import *
-from tag.utils.saved import assume_saved
+
+DONE_TAG_NAME = 'done'
+TASK_NAME_MAX_LENGTH = 256
 
 class Task(Tagged_Object):
     name = models.CharField(
-        max_length = 256,
+        max_length = TASK_NAME_MAX_LENGTH,
         default = 'Task'
     )
 
     description = models.TextField(default='')
 
     def done(self, arg = None):
-        #assume_saved(self)
-        meta_tag, created = Meta_Tag.objects.get_or_create(meta_tag__name = 'done')
+        ts = None
+        done_tag = self.get_done_tag()
+        query = self.tagging_set.filter(meta_tag = done_tag)
 
-        if arg is None:
-            if created:
-                self.tagging_set.get_or_create(meta_tag = meta_tag, tag = get_boolean_tag(False))[0]
+        if query.exists():
+            ts = query.get()
+            if arg is not None:
+                ts.tag = Boolean_Tag.get(arg)
+                ts.save()
+        else:
+            ts = self.tagging_set.create(
+                meta_tag = done_tag,
+                tag = Boolean_Tag.get(arg),
+            )
 
+        return ts.tag.boolean_tag.value
 
     def __str__(self):
         return self.name
+
+    @staticmethod
+    def get_done_tag():
+        return Meta_Tag.objects.get_or_create(name = DONE_TAG_NAME)[0]
 

@@ -22,7 +22,7 @@ class Abstract_Tag(models.Model):
 
 class Tag(Abstract_Tag):
     '''Tag Class'''
-    pass
+    has_value = False
 
 class Meta_Tag(Abstract_Tag):
     '''Tag that defines the name of relationship between a Tagged_Object
@@ -198,3 +198,26 @@ class Tagging(models.Model):
     class Meta:
          unique_together = (('tagged_object', 'tag', 'meta_tag'), )
 
+    def __str__(self):
+        if self.meta_tag is None:
+            return '"{}" is tagged "{}"'.format(self.tagged_object, self.tag)
+        else:
+            return '"{}" is tagged "{}":"{}"'.format(
+                self.tagged_object, self.meta_tag, self.tag
+            )
+
+class Boolean_Tag(Tag):
+    has_value = True
+    value = models.BooleanField(default = False)
+
+    @classmethod
+    def get(cls, value = None):
+        value = bool(value)
+        return cls.objects.get_or_create(
+            name = 'true' if value else 'false', 
+            value = value,
+        )[0]
+
+class DateTime_Tag(Tag):
+    has_value = True
+    value = models.DateTimeField()

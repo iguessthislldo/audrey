@@ -21,6 +21,8 @@ from rest_framework import routers, serializers, viewsets
 
 from tag.serializers import Tag_Serializer
 from tag.models import Tag
+from task.models import Task
+from task.serializers import Task_Serializer
 
 # Serializers define the API representation.
 class UserSerializer(serializers.HyperlinkedModelSerializer):
@@ -40,8 +42,12 @@ router.register(r'users', UserViewSet)
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = Tag_Serializer
-
 router.register(r'tags', TagViewSet)
+
+class TaskViewSet(viewsets.ModelViewSet):
+    queryset = Task.objects.all()
+    serializer_class = Task_Serializer
+router.register(r'tasks', TaskViewSet)
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.

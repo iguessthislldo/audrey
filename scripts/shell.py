@@ -1,3 +1,3 @@
-import dothing.wsgi
+import audrey.wsgi
 from tag.models import *
-from todo.models import Task
+from task.models import Task
