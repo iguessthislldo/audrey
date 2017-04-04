@@ -1,4 +1,4 @@
-var api = new RestClient('http://localhost:8000');
+var api = new RestClient('http://localhost:8000/api');
 api.res('tasks');
 
 $(function(){
