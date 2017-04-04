@@ -12,4 +12,3 @@ class Tag_Serializer(serializers.Serializer):
         instance.name = validated_data.get('name', instance.name)
         instance.save()
         return instance
-

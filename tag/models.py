@@ -193,6 +193,7 @@ class Tagging(models.Model):
         Meta_Tag,
         on_delete = models.CASCADE,
         null = True,
+        blank = True,
     )
 
     class Meta:
@@ -206,18 +207,3 @@ class Tagging(models.Model):
                 self.tagged_object, self.meta_tag, self.tag
             )
 
-class Boolean_Tag(Tag):
-    has_value = True
-    value = models.BooleanField(default = False)
-
-    @classmethod
-    def get(cls, value = None):
-        value = bool(value)
-        return cls.objects.get_or_create(
-            name = 'true' if value else 'false', 
-            value = value,
-        )[0]
-
-class DateTime_Tag(Tag):
-    has_value = True
-    value = models.DateTimeField()
