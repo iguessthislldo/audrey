@@ -2,3 +2,24 @@
     background-color: #A9A1DD;
     border-color: #3B3176;
 }
+
+.checkbox {
+    width: 30px;
+    height: 30px;
+    stroke: #00ff00;
+}
+
+.checkbox .checkmark.checked {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 0;
+    animation: check 2s ease-in-out;
+}
+
+@keyframes check {
+ 0% {
+   stroke-dashoffset: 1000;
+ }
+ 100% {
+   stroke-dashoffset: 0;
+ }
+}
