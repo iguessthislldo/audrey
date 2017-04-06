@@ -6,4 +6,9 @@ $(function(){
         let list = new Task_List_View(Task.from_objects(tasks));
         $('#app').append(list.element);
     });
+
+    $(".bar").select2({
+      tags: true
+    })
 });
+

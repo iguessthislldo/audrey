@@ -4,14 +4,14 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from Tag.models import Tag
+from Tag.models import Tag, TaggedObject
 from Tag.serializers import TagSerializer
 
 class TagDetail(APIView):
     def get_object(self, pk):
         try:
             return Tag.objects.get(pk=pk)
-        except Snippet.DoesNotExist:
+        except TagSerializer.DoesNotExist:
             raise Http404
 
     def get(self, request, pk, format=None):
@@ -31,3 +31,6 @@ class TagDetail(APIView):
         tag = self.get_object(pk)
         tag.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class TaggedObject_APIView(APIView):
+    

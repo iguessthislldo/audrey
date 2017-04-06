@@ -84,6 +84,7 @@ class Task_List_View {
         var view;
         for (var i = 0; i < tasks.length; i++) {
             view = new Task_View(tasks[i]);
+            view.owner = this;
             this.selection.add(view, view.element);
             this.element.append(view.element);
         }

@@ -1,8 +1,7 @@
 """dothing URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/1.10/topics/http/urls/
-Examples:
+    https://docs.djangoproject.com/en/1.10/topics/http/urls/ Examples:
 Function views
     1. Add an import:  from my_app import views
     2. Add a URL to urlpatterns:  url(r'^$', views.home, name='home')
@@ -19,8 +18,8 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 from rest_framework import routers, serializers, viewsets
 
-from tag.serializers import Tag_Serializer
-from tag.models import Tag
+from tag.serializers import Tag_Serializer, Tagged_Object_Serializer
+from tag.models import Tag, Tagged_Object
 from task.models import Task
 from task.serializers import Task_Serializer
 
@@ -39,15 +38,20 @@ class UserViewSet(viewsets.ModelViewSet):
 router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
 
-class TagViewSet(viewsets.ModelViewSet):
+class Tag_ViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = Tag_Serializer
-router.register(r'tags', TagViewSet)
+router.register(r'tags', Tag_ViewSet)
 
-class TaskViewSet(viewsets.ModelViewSet):
+class Tagged_Object_ViewSet(viewsets.ModelViewSet):
+    queryset = Tagged_Object.objects.all()
+    serializer_class = Tagged_Object_Serializer
+router.register(r'tagged_objects', Tagged_Object_ViewSet)
+
+class Task_ViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = Task_Serializer
-router.register(r'tasks', TaskViewSet)
+router.register(r'tasks', Task_ViewSet)
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.

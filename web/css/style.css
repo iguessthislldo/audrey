@@ -4,6 +4,7 @@
 }
 
 .checkbox {
+    margin: 0;
     width: 30px;
     height: 30px;
     stroke: #00ff00;
@@ -22,4 +23,24 @@
  100% {
    stroke-dashoffset: 0;
  }
+}
+
+ul.inline_tags {
+    list-style:none;
+    padding-left:0;
+    display: inline;
+}
+
+ul.inline_tags li {
+    display: inline;
+    line-height: 2.0em; 
+}
+
+ul.inline_tags a {
+    color: #ffffff;
+    border-color: #ffffff;
+    border-style: solid;
+    border-radius: 5px;
+    border-width: 2px;
+    padding: 2px;
 }

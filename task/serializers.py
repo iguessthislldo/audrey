@@ -1,12 +1,9 @@
 from rest_framework import serializers
 
+from tag.serializers import Tagged_Object_Serializer
 from .models import *
 
-class Task_Serializer(serializers.Serializer):
-    id = serializers.UUIDField(
-        read_only = True,
-    )
-
+class Task_Serializer(Tagged_Object_Serializer):
     name = serializers.CharField(
         required = True,
         allow_blank = False,
@@ -23,9 +20,7 @@ class Task_Serializer(serializers.Serializer):
     )
 
     def create(self, validated_data):
-        done = validated_data.pop('done')
         instance = Task.objects.create(**validated_data)
-        instance.done(done)
         return instance
 
     def update(self, instance, validated_data):
@@ -33,7 +28,6 @@ class Task_Serializer(serializers.Serializer):
         instance.description= validated_data.get(
             'description', instance.description
         )
-        instance.save()
-        instance.done(validated_data.get('done', instance.done))
+        instance.done = validated_data.get('done', instance.done)
         return instance
 
